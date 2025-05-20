@@ -42,7 +42,6 @@ exports.getReportByDate = async (date, warehouseCode) => {
             vp_ord.reestr_id as vp_reestr_id,
             ord.reqst_recpt_date,
             ord.status,
-            ord.reqst_recpt_date,
             s.std_cartons
           FROM elite.whse_t_h$ wh
           LEFT JOIN elite.v_reestr_ord_k1$ vp_ord ON vp_ord.transfer_num = wh.transfer_num
