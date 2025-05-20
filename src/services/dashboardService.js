@@ -42,7 +42,7 @@ exports.getReportByDate = async (date, warehouseCode) => {
             vp_ord.reestr_id as vp_reestr_id,
             ord.reqst_recpt_date,
             ord.status,
-            ord.every_day_num_date,
+            ord.reqst_recpt_date,
             s.std_cartons
           FROM elite.whse_t_h$ wh
           LEFT JOIN elite.v_reestr_ord_k1$ vp_ord ON vp_ord.transfer_num = wh.transfer_num
@@ -50,7 +50,7 @@ exports.getReportByDate = async (date, warehouseCode) => {
           LEFT JOIN elite.ship$ s ON s.deliv_id = vp_ord.reestr_id
           WHERE wh.trans_type = 4
           AND wh.to_whse_code = ''${warehouseCode}''
-          AND ord.every_day_num_date > TO_DATE(''${date}'', ''DD.MM.YYYY'')
+          AND ord.reqst_recpt_date > TO_DATE(''${date}'', ''DD.MM.YYYY'')
         )
         GROUP BY rsd_code, reqst_recpt_date, status'
       )`;
