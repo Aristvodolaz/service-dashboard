@@ -4,9 +4,10 @@ const dbConfig = require('../config/database');
 /**
  * Получение отчета по дате
  * @param {string} date - Дата в формате DD.MM.YYYY
+ * @param {string} warehouseCode - Код склада
  * @returns {Promise<Array>} - Данные отчета
  */
-exports.getReportByDate = async (date) => {
+exports.getReportByDate = async (date, warehouseCode) => {
   try {
     // Подключаемся к базе данных
     const pool = await sql.connect(dbConfig);
@@ -46,7 +47,7 @@ exports.getReportByDate = async (date) => {
           LEFT JOIN elite.v_reestr_ord_k1$ ord ON ord.reestr_id = wh.deliv_id_client
           LEFT JOIN elite.ship$ s ON s.deliv_id = vp_ord.reestr_id
           WHERE wh.trans_type = 4
-          AND wh.to_whse_code = ''0K3''
+          AND wh.to_whse_code = ''${warehouseCode}''
           AND ord.every_day_num_date > TO_DATE(''${date}'', ''DD.MM.YYYY'')
         )
         GROUP BY reqst_recpt_date, status'
@@ -59,6 +60,37 @@ exports.getReportByDate = async (date) => {
     return result.recordset;
   } catch (error) {
     console.error('Ошибка в сервисе getReportByDate:', error);
+    throw error;
+  }
+};
+
+/**
+ * Получение списка складов
+ * @param {string} [date='01.01.2024'] - Дата начала в формате DD.MM.YYYY
+ * @returns {Promise<Array>} - Список складов
+ */
+exports.getWarehousesList = async (date = '01.01.2024') => {
+  try {
+    // Подключаемся к базе данных
+    const pool = await sql.connect(dbConfig);
+    
+    // Формируем SQL запрос
+    const query = `
+      SELECT * FROM OPENQUERY(
+        OW,
+        'SELECT DISTINCT to_whse_name AS "warehouse_name", to_whse_code AS "warehouse_code" 
+        FROM elite.whse_t_h$ 
+        WHERE date_import > TO_DATE(''${date}'', ''DD.MM.YYYY'')
+        ORDER BY to_whse_name'
+      )`;
+    
+    // Выполняем запрос
+    const result = await pool.request().query(query);
+    
+    // Возвращаем результаты
+    return result.recordset;
+  } catch (error) {
+    console.error('Ошибка в сервисе getWarehousesList:', error);
     throw error;
   }
 }; 

@@ -33,33 +33,62 @@ npm run dev
 ### Получение отчета по дате
 
 ```
-GET /api/dashboard/report?date=DD.MM.YYYY
+GET /api/dashboard/report?date=DD.MM.YYYY&warehouse=CODE
 ```
 
 #### Параметры запроса:
-- `date` - дата в формате DD.MM.YYYY
+- `date` - дата в формате DD.MM.YYYY (обязательный)
+- `warehouse` - код склада (необязательный, по умолчанию '0K3')
 
 #### Пример запроса:
 ```
-GET /api/dashboard/report?date=16.05.2025
+GET /api/dashboard/report?date=16.05.2025&warehouse=0K3
 ```
 
 #### Пример успешного ответа:
 ```json
 [
   {
-    "треб_дата_ЗНД": "2025-05-16T00:00:00.000Z",
-    "статус_ЗНД": "Готов к отгрузке",
-    "количество_ВП_комплектация": 10,
-    "количество_ВП_НЕ_отгружено": 5,
-    "количество_мест_скомлпектовано_НЕ_отгружено": 25,
-    "объем_ЗнД_скомлпектовано_НЕ_отгружено": 2.5,
-    "количество_ВП_в_пути": 3,
-    "количество_мест_в_пути": 15,
-    "объем_ВП_в_пути": 1.5,
-    "количество_ВП_статус5": 2,
-    "количество_мест_статус5": 10,
-    "объем_ВП_статус5": 1.0
+    "required_date": "2025-05-16T00:00:00.000Z",
+    "status": "Готов к отгрузке",
+    "picking_count": 10,
+    "not_shipped_count": 5,
+    "picked_not_shipped_places": 25,
+    "picked_not_shipped_volume": 2.5,
+    "in_transit_count": 3,
+    "in_transit_places": 15,
+    "in_transit_volume": 1.5,
+    "status5_count": 2,
+    "status5_places": 10,
+    "status5_volume": 1.0
+  }
+]
+```
+
+### Получение списка складов
+
+```
+GET /api/dashboard/warehouses
+```
+
+#### Параметры запроса:
+- `date` - дата в формате DD.MM.YYYY (необязательно, по умолчанию 01.01.2024)
+
+#### Пример запроса:
+```
+GET /api/dashboard/warehouses
+```
+
+#### Пример успешного ответа:
+```json
+[
+  {
+    "warehouse_name": "Склад 1",
+    "warehouse_code": "SK1"
+  },
+  {
+    "warehouse_name": "Склад 2",
+    "warehouse_code": "SK2"
   }
 ]
 ``` 
