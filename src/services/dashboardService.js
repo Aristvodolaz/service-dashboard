@@ -2,12 +2,13 @@ const sql = require('mssql');
 const dbConfig = require('../config/database');
 
 /**
- * Получение отчета по дате
- * @param {string} date - Дата в формате DD.MM.YYYY
+ * Получение отчета по диапазону дат
+ * @param {string} startDate - Начальная дата в формате DD.MM.YYYY
+ * @param {string} endDate - Конечная дата в формате DD.MM.YYYY
  * @param {string} warehouseCode - Код склада
  * @returns {Promise<Array>} - Данные отчета
  */
-exports.getReportByDate = async (date, warehouseCode) => {
+exports.getReportByDate = async (startDate, endDate, warehouseCode) => {
   try {
     // Подключаемся к базе данных
     const pool = await sql.connect(dbConfig);
@@ -17,7 +18,7 @@ exports.getReportByDate = async (date, warehouseCode) => {
       SELECT * FROM OPENQUERY(
         OW,
         'SELECT 
-        	rsd_code as "rsd",
+          rsd_code as "rsd",
           reqst_recpt_date AS "required_date",
           status AS "status",
           COUNT(CASE WHEN trans_status = 2 THEN 1 END) AS "picking_count",
@@ -32,7 +33,7 @@ exports.getReportByDate = async (date, warehouseCode) => {
           SUM(CASE WHEN trans_status = 5 THEN volume ELSE 0 END) / 1000000 AS "status5_volume"
         FROM (
           SELECT
-          	ord.rsd_code,
+            ord.rsd_code,
             wh.trans_status,
             wh.transfer_num,
             wh.deliv_id_client,
@@ -49,7 +50,7 @@ exports.getReportByDate = async (date, warehouseCode) => {
           LEFT JOIN elite.ship$ s ON s.deliv_id = vp_ord.reestr_id
           WHERE wh.trans_type = 4
           AND wh.to_whse_code = ''${warehouseCode}''
-          AND ord.reqst_recpt_date > TO_DATE(''${date}'', ''DD.MM.YYYY'')
+          AND ord.reqst_recpt_date BETWEEN TO_DATE(''${startDate}'', ''DD.MM.YYYY'') AND TO_DATE(''${endDate}'', ''DD.MM.YYYY'')
         )
         GROUP BY rsd_code, reqst_recpt_date, status'
       )`;

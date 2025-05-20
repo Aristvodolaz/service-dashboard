@@ -3,22 +3,42 @@ const dashboardService = require('../services/dashboardService');
 // Контроллер для получения отчета по дате
 exports.getReportByDate = async (req, res, next) => {
   try {
-    // Получаем дату и код склада из параметров запроса
-    const { date, warehouse } = req.query;
+    // Получаем параметры из запроса
+    const { startDate, endDate, warehouse } = req.query;
     
-    // Проверяем наличие даты
-    if (!date) {
-      return res.status(400).json({ message: 'Необходимо указать дату в формате DD.MM.YYYY' });
+    // Проверяем наличие обязательных параметров
+    if (!startDate || !endDate) {
+      return res.status(400).json({ 
+        message: 'Необходимо указать начальную (startDate) и конечную (endDate) даты в формате DD.MM.YYYY' 
+      });
+    }
+
+    if (!warehouse) {
+      return res.status(400).json({ 
+        message: 'Необходимо указать код склада (warehouse)' 
+      });
     }
     
-    // Проверяем формат даты
+    // Проверяем формат дат
     const dateRegex = /^\d{2}.\d{2}.\d{4}$/;
-    if (!dateRegex.test(date)) {
-      return res.status(400).json({ message: 'Некорректный формат даты. Используйте формат DD.MM.YYYY' });
+    if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
+      return res.status(400).json({ 
+        message: 'Некорректный формат даты. Используйте формат DD.MM.YYYY для обеих дат' 
+      });
+    }
+
+    // Проверяем, что начальная дата не больше конечной
+    const startDateObj = new Date(startDate.split('.').reverse().join('-'));
+    const endDateObj = new Date(endDate.split('.').reverse().join('-'));
+    
+    if (startDateObj > endDateObj) {
+      return res.status(400).json({ 
+        message: 'Начальная дата не может быть больше конечной' 
+      });
     }
     
-    // Получаем данные отчета через сервис с указанием даты и кода склада
-    const reportData = await dashboardService.getReportByDate(date, warehouse);
+    // Получаем данные отчета через сервис
+    const reportData = await dashboardService.getReportByDate(startDate, endDate, warehouse);
     
     // Возвращаем успешный ответ с данными
     res.status(200).json(reportData);
