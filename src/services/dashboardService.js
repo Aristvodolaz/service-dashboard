@@ -78,11 +78,11 @@ exports.getWarehousesList = async (date = '01.01.2024') => {
     
     // Формируем SQL запрос
     const query = `
-       SELECT * FROM OPENQUERY(
+
+     SELECT * FROM OPENQUERY(
         OW,
-        'SELECT * from  wms.warehouse where 
+        'SELECT NAME AS "warehouse_name" from  wms.warehouse where 
 		whtype_id = 0 and logistic_junc_level = 1'
-       
       )`;
     
     // Выполняем запрос
