@@ -81,7 +81,7 @@ exports.getWarehousesList = async (date = '01.01.2024') => {
            SELECT *  FROM OPENQUERY(
         OW,
         'SELECT  NAME AS "warehouse_name", parent_id AS "warehouse_code"  from  wms.warehouse where 
-		whtype_id = 0 and logistic_junc_level = 1'
+		whtype_id = 0 and logistic_junc_level = 1')
        `;
     
     // Выполняем запрос
