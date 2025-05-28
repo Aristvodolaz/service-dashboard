@@ -96,11 +96,11 @@ exports.getWarehousesList = async (date = '01.01.2024') => {
 };
 
 /**
- * Получение отчета по диапазону дат с группировкой по РСД
- * @param {string} startDate - Начальная дата в формате DD.MM.YYYY
- * @param {string} endDate - Конечная дата в формате DD.MM.YYYY
- * @param {number} [warehouseId=300] - ID склада
- * @returns {Promise<Array>} - Данные отчета
+ * Get report by date range with RSD grouping
+ * @param {string} startDate - Start date in DD.MM.YYYY format
+ * @param {string} endDate - End date in DD.MM.YYYY format
+ * @param {number} [warehouseId=300] - Warehouse ID
+ * @returns {Promise<Array>} - Report data
  */
 exports.getReportByDateWithRSD = async (startDate, endDate, warehouseId = 300) => {
   try {
@@ -119,20 +119,20 @@ SELECT
     w.id,
     w.e_code,
     ord.rsd_code,
-    ord.reqst_recpt_date треб_дата_ЗНД,
-    ord.status статус_ЗНД,
-    count(case when wh.trans_status = 2 then 1 end) as количество_ВП_комплектация,
-    count(case when wh.trans_status = 4 and vp_ord.to_id is null then 1 end) as количество_ВП_НЕ_отгружено,
-    sum(case when wh.trans_status = 4 and vp_ord.to_id is null then s.std_cartons else 0 end) as количество_мест_скомлпектовано_НЕ_отгружено,
-    sum(case when wh.trans_status = 4 and vp_ord.to_id is null then vp_ord.volume else 0 end)/1000000 as объем_ЗнД_скомлпектовано_НЕ_отгружено,
-    count(case when vp_ord.to_id is not null and wh.trans_status <> 5 then 1 end) as количество_ВП_в_пути,
-    sum(case when vp_ord.to_id is not null and wh.trans_status <> 5 then s.std_cartons else 0 end) as количество_мест_в_пути,
-    sum(case when vp_ord.to_id is not null and wh.trans_status <> 5 then vp_ord.volume else 0 end)/1000000 as объем_ВП_в_пути,
-    sum(case when ord.status = 0 then s.std_cartons else 0 end) as количество_мест_ЗНД_0,
-    sum(case when ord.status = 0 then vp_ord.volume else 0 end)/1000000 as объем_ЗНД_0,
-    count(case when wh.trans_status = 5 then 1 end) as количество_ВП_статус5,
-    sum(case when wh.trans_status = 5 then s.std_cartons else 0 end) as количество_мест_статус5,
-    sum(case when wh.trans_status = 5 then vp_ord.volume else 0 end)/1000000 as объем_ВП_статус5
+    ord.reqst_recpt_date as required_date,
+    ord.status as status,
+    count(case when wh.trans_status = 2 then 1 end) as picking_count,
+    count(case when wh.trans_status = 4 and vp_ord.to_id is null then 1 end) as not_shipped_count,
+    sum(case when wh.trans_status = 4 and vp_ord.to_id is null then s.std_cartons else 0 end) as picked_not_shipped_places,
+    sum(case when wh.trans_status = 4 and vp_ord.to_id is null then vp_ord.volume else 0 end)/1000000 as picked_not_shipped_volume,
+    count(case when vp_ord.to_id is not null and wh.trans_status <> 5 then 1 end) as in_transit_count,
+    sum(case when vp_ord.to_id is not null and wh.trans_status <> 5 then s.std_cartons else 0 end) as in_transit_places,
+    sum(case when vp_ord.to_id is not null and wh.trans_status <> 5 then vp_ord.volume else 0 end)/1000000 as in_transit_volume,
+    sum(case when ord.status = 0 then s.std_cartons else 0 end) as status0_places,
+    sum(case when ord.status = 0 then vp_ord.volume else 0 end)/1000000 as status0_volume,
+    count(case when wh.trans_status = 5 then 1 end) as status5_count,
+    sum(case when wh.trans_status = 5 then s.std_cartons else 0 end) as status5_places,
+    sum(case when wh.trans_status = 5 then vp_ord.volume else 0 end)/1000000 as status5_volume
 FROM elite.whse_t_h$ wh
 JOIN warehouse_hierarchy wh_hier ON wh.to_whse_code = wh_hier.e_code
 LEFT JOIN wms.d_transfer tr ON tr.e_id = wh.transfer_num
@@ -157,17 +157,17 @@ GROUP BY
     const result = await pool.request().query(query);
     return result.recordset;
   } catch (error) {
-    console.error('Ошибка в сервисе getReportByDateWithRSD:', error);
+    console.error('Error in getReportByDateWithRSD service:', error);
     throw error;
   }
 };
 
 /**
- * Получение отчета по диапазону дат без группировки по РСД
- * @param {string} startDate - Начальная дата в формате DD.MM.YYYY
- * @param {string} endDate - Конечная дата в формате DD.MM.YYYY
- * @param {number} [warehouseId=300] - ID склада
- * @returns {Promise<Array>} - Данные отчета
+ * Get report by date range without RSD grouping
+ * @param {string} startDate - Start date in DD.MM.YYYY format
+ * @param {string} endDate - End date in DD.MM.YYYY format
+ * @param {number} [warehouseId=300] - Warehouse ID
+ * @returns {Promise<Array>} - Report data
  */
 exports.getReportByDateWithoutRSD = async (startDate, endDate, warehouseId = 300) => {
   try {
@@ -185,20 +185,20 @@ exports.getReportByDateWithoutRSD = async (startDate, endDate, warehouseId = 300
 SELECT
     w.id,
     w.e_code,
-    ord.reqst_recpt_date треб_дата_ЗНД,
-    ord.status статус_ЗНД,
-    count(case when wh.trans_status = 2 then 1 end) as количество_ВП_комплектация,
-    count(case when wh.trans_status = 4 and vp_ord.to_id is null then 1 end) as количество_ВП_НЕ_отгружено,
-    sum(case when wh.trans_status = 4 and vp_ord.to_id is null then s.std_cartons else 0 end) as количество_мест_скомлпектовано_НЕ_отгружено,
-    sum(case when wh.trans_status = 4 and vp_ord.to_id is null then vp_ord.volume else 0 end)/1000000 as объем_ЗнД_скомлпектовано_НЕ_отгружено,
-    count(case when vp_ord.to_id is not null and wh.trans_status <> 5 then 1 end) as количество_ВП_в_пути,
-    sum(case when vp_ord.to_id is not null and wh.trans_status <> 5 then s.std_cartons else 0 end) as количество_мест_в_пути,
-    sum(case when vp_ord.to_id is not null and wh.trans_status <> 5 then vp_ord.volume else 0 end)/1000000 as объем_ВП_в_пути,
-    sum(case when ord.status = 0 then s.std_cartons else 0 end) as количество_мест_ЗНД_0,
-    sum(case when ord.status = 0 then vp_ord.volume else 0 end)/1000000 as объем_ЗНД_0,
-    count(case when wh.trans_status = 5 then 1 end) as количество_ВП_статус5,
-    sum(case when wh.trans_status = 5 then s.std_cartons else 0 end) as количество_мест_статус5,
-    sum(case when wh.trans_status = 5 then vp_ord.volume else 0 end)/1000000 as объем_ВП_статус5
+    ord.reqst_recpt_date as required_date,
+    ord.status as status,
+    count(case when wh.trans_status = 2 then 1 end) as picking_count,
+    count(case when wh.trans_status = 4 and vp_ord.to_id is null then 1 end) as not_shipped_count,
+    sum(case when wh.trans_status = 4 and vp_ord.to_id is null then s.std_cartons else 0 end) as picked_not_shipped_places,
+    sum(case when wh.trans_status = 4 and vp_ord.to_id is null then vp_ord.volume else 0 end)/1000000 as picked_not_shipped_volume,
+    count(case when vp_ord.to_id is not null and wh.trans_status <> 5 then 1 end) as in_transit_count,
+    sum(case when vp_ord.to_id is not null and wh.trans_status <> 5 then s.std_cartons else 0 end) as in_transit_places,
+    sum(case when vp_ord.to_id is not null and wh.trans_status <> 5 then vp_ord.volume else 0 end)/1000000 as in_transit_volume,
+    sum(case when ord.status = 0 then s.std_cartons else 0 end) as status0_places,
+    sum(case when ord.status = 0 then vp_ord.volume else 0 end)/1000000 as status0_volume,
+    count(case when wh.trans_status = 5 then 1 end) as status5_count,
+    sum(case when wh.trans_status = 5 then s.std_cartons else 0 end) as status5_places,
+    sum(case when wh.trans_status = 5 then vp_ord.volume else 0 end)/1000000 as status5_volume
 FROM elite.whse_t_h$ wh
 JOIN warehouse_hierarchy wh_hier ON wh.to_whse_code = wh_hier.e_code
 LEFT JOIN wms.d_transfer tr ON tr.e_id = wh.transfer_num
@@ -222,7 +222,7 @@ GROUP BY
     const result = await pool.request().query(query);
     return result.recordset;
   } catch (error) {
-    console.error('Ошибка в сервисе getReportByDateWithoutRSD:', error);
+    console.error('Error in getReportByDateWithoutRSD service:', error);
     throw error;
   }
 }; 

@@ -79,45 +79,52 @@ exports.getWarehousesList = async (req, res, next) => {
 };
 
 /**
- * Контроллер для получения отчета по дате с группировкой по РСД
+ * Controller for getting report with RSD grouping
  */
 exports.getReportByDateWithRSD = async (req, res, next) => {
   try {
     const { startDate, endDate, warehouseId } = req.query;
     
-    // Проверяем наличие обязательных параметров
+    // Check required parameters
     if (!startDate || !endDate) {
       return res.status(400).json({ 
-        message: 'Необходимо указать начальную (startDate) и конечную (endDate) даты в формате DD.MM.YYYY' 
+        message: 'Start date (startDate) and end date (endDate) in DD.MM.YYYY format are required' 
       });
     }
 
-    // Проверяем формат дат
+    // Check warehouseId format
+    if (warehouseId && isNaN(parseInt(warehouseId))) {
+      return res.status(400).json({
+        message: 'Warehouse ID must be a number'
+      });
+    }
+
+    // Check date format
     const dateRegex = /^\d{2}.\d{2}.\d{4}$/;
     if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
       return res.status(400).json({ 
-        message: 'Некорректный формат даты. Используйте формат DD.MM.YYYY для обеих дат' 
+        message: 'Invalid date format. Use DD.MM.YYYY format for both dates' 
       });
     }
 
-    // Проверяем, что начальная дата не больше конечной
+    // Check if start date is not greater than end date
     const startDateObj = new Date(startDate.split('.').reverse().join('-'));
     const endDateObj = new Date(endDate.split('.').reverse().join('-'));
     
     if (startDateObj > endDateObj) {
       return res.status(400).json({ 
-        message: 'Начальная дата не может быть больше конечной' 
+        message: 'Start date cannot be greater than end date' 
       });
     }
     
-    // Получаем данные отчета через сервис
+    // Get report data through service
     const reportData = await dashboardService.getReportByDateWithRSD(
       startDate, 
       endDate, 
       warehouseId ? parseInt(warehouseId) : undefined
     );
     
-    // Возвращаем успешный ответ с данными
+    // Return successful response with data
     res.status(200).json(reportData);
   } catch (error) {
     next(error);
@@ -125,45 +132,52 @@ exports.getReportByDateWithRSD = async (req, res, next) => {
 };
 
 /**
- * Контроллер для получения отчета по дате без группировки по РСД
+ * Controller for getting report without RSD grouping
  */
 exports.getReportByDateWithoutRSD = async (req, res, next) => {
   try {
     const { startDate, endDate, warehouseId } = req.query;
     
-    // Проверяем наличие обязательных параметров
+    // Check required parameters
     if (!startDate || !endDate) {
       return res.status(400).json({ 
-        message: 'Необходимо указать начальную (startDate) и конечную (endDate) даты в формате DD.MM.YYYY' 
+        message: 'Start date (startDate) and end date (endDate) in DD.MM.YYYY format are required' 
       });
     }
 
-    // Проверяем формат дат
+    // Check warehouseId format
+    if (warehouseId && isNaN(parseInt(warehouseId))) {
+      return res.status(400).json({
+        message: 'Warehouse ID must be a number'
+      });
+    }
+
+    // Check date format
     const dateRegex = /^\d{2}.\d{2}.\d{4}$/;
     if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
       return res.status(400).json({ 
-        message: 'Некорректный формат даты. Используйте формат DD.MM.YYYY для обеих дат' 
+        message: 'Invalid date format. Use DD.MM.YYYY format for both dates' 
       });
     }
 
-    // Проверяем, что начальная дата не больше конечной
+    // Check if start date is not greater than end date
     const startDateObj = new Date(startDate.split('.').reverse().join('-'));
     const endDateObj = new Date(endDate.split('.').reverse().join('-'));
     
     if (startDateObj > endDateObj) {
       return res.status(400).json({ 
-        message: 'Начальная дата не может быть больше конечной' 
+        message: 'Start date cannot be greater than end date' 
       });
     }
     
-    // Получаем данные отчета через сервис
+    // Get report data through service
     const reportData = await dashboardService.getReportByDateWithoutRSD(
       startDate, 
       endDate, 
       warehouseId ? parseInt(warehouseId) : undefined
     );
     
-    // Возвращаем успешный ответ с данными
+    // Return successful response with data
     res.status(200).json(reportData);
   } catch (error) {
     next(error);
