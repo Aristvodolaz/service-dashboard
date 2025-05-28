@@ -78,12 +78,11 @@ exports.getWarehousesList = async (date = '01.01.2024') => {
     
     // Формируем SQL запрос
     const query = `
-      SELECT * FROM OPENQUERY(
+       SELECT * FROM OPENQUERY(
         OW,
-        'SELECT DISTINCT to_whse_name AS "warehouse_name", to_whse_code AS "warehouse_code" 
-        FROM elite.whse_t_h$ 
-        WHERE date_import > TO_DATE(''${date}'', ''DD.MM.YYYY'')
-        ORDER BY to_whse_name'
+        'SELECT * from  wms.warehouse where 
+		whtype_id = 0 and logistic_junc_level = 1'
+       
       )`;
     
     // Выполняем запрос
