@@ -83,7 +83,7 @@ exports.getWarehousesList = async (req, res, next) => {
  */
 exports.getReportByDateWithRSD = async (req, res, next) => {
   try {
-    const { startDate, endDate, warehouseId } = req.query;
+    const { startDate, endDate, warehouse, warehouseId } = req.query;
     
     // Check required parameters
     if (!startDate || !endDate) {
@@ -92,8 +92,15 @@ exports.getReportByDateWithRSD = async (req, res, next) => {
       });
     }
 
-    // Check warehouseId format
-    if (warehouseId && isNaN(parseInt(warehouseId))) {
+    // Check warehouse/warehouseId format
+    const warehouseParam = warehouse || warehouseId;
+    if (!warehouseParam) {
+      return res.status(400).json({
+        message: 'Warehouse ID is required (use warehouse or warehouseId parameter)'
+      });
+    }
+
+    if (isNaN(parseInt(warehouseParam))) {
       return res.status(400).json({
         message: 'Warehouse ID must be a number'
       });
@@ -121,12 +128,19 @@ exports.getReportByDateWithRSD = async (req, res, next) => {
     const reportData = await dashboardService.getReportByDateWithRSD(
       startDate, 
       endDate, 
-      warehouseId ? parseInt(warehouseId) : undefined
+      parseInt(warehouseParam)
     );
     
     // Return successful response with data
     res.status(200).json(reportData);
   } catch (error) {
+    console.error('Error in getReportByDateWithRSD controller:', error);
+    if (error.originalError) {
+      return res.status(500).json({
+        message: 'Database query error',
+        details: error.query
+      });
+    }
     next(error);
   }
 };
@@ -136,7 +150,7 @@ exports.getReportByDateWithRSD = async (req, res, next) => {
  */
 exports.getReportByDateWithoutRSD = async (req, res, next) => {
   try {
-    const { startDate, endDate, warehouseId } = req.query;
+    const { startDate, endDate, warehouse, warehouseId } = req.query;
     
     // Check required parameters
     if (!startDate || !endDate) {
@@ -145,8 +159,15 @@ exports.getReportByDateWithoutRSD = async (req, res, next) => {
       });
     }
 
-    // Check warehouseId format
-    if (warehouseId && isNaN(parseInt(warehouseId))) {
+    // Check warehouse/warehouseId format
+    const warehouseParam = warehouse || warehouseId;
+    if (!warehouseParam) {
+      return res.status(400).json({
+        message: 'Warehouse ID is required (use warehouse or warehouseId parameter)'
+      });
+    }
+
+    if (isNaN(parseInt(warehouseParam))) {
       return res.status(400).json({
         message: 'Warehouse ID must be a number'
       });
@@ -174,12 +195,19 @@ exports.getReportByDateWithoutRSD = async (req, res, next) => {
     const reportData = await dashboardService.getReportByDateWithoutRSD(
       startDate, 
       endDate, 
-      warehouseId ? parseInt(warehouseId) : undefined
+      parseInt(warehouseParam)
     );
     
     // Return successful response with data
     res.status(200).json(reportData);
   } catch (error) {
+    console.error('Error in getReportByDateWithoutRSD controller:', error);
+    if (error.originalError) {
+      return res.status(500).json({
+        message: 'Database query error',
+        details: error.query
+      });
+    }
     next(error);
   }
 }; 

@@ -169,7 +169,7 @@ GROUP BY
  * @param {number} [warehouseId=300] - Warehouse ID
  * @returns {Promise<Array>} - Report data
  */
-exports.getReportByDateWithoutRSD = async (startDate, endDate, warehouseId = 300) => {
+exports.getReportByDateWithoutRSD = async (startDate, endDate, warehouseId) => {
   try {
     const pool = await sql.connect(dbConfig);
     
