@@ -102,7 +102,7 @@ exports.getWarehousesList = async (date = '01.01.2024') => {
  * @param {number} [warehouseId=300] - Warehouse ID
  * @returns {Promise<Array>} - Report data
  */
-exports.getReportByDateWithRSD = async (startDate, endDate, warehouseId = 300) => {
+exports.getReportByDateWithRSD = async (startDate, endDate, warehouseId) => {
   try {
     const pool = await sql.connect(dbConfig);
     
